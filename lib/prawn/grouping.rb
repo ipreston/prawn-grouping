@@ -52,8 +52,19 @@ module Prawn
     private
 
     def create_box_clone
-      Prawn::Document.new(:page_size => state.page.size, :page_layout => state.page.layout) do |pdf|
-        pdf.margin_box = @bounding_box.dup
+      # the box clone will have the same height and vertical margins
+      # as the original, but no left and right margins, and its width
+      # is set to the current bounding box's width. This should ensure
+      # accurate widths also when the bounding box is a ColumnBox
+      opts = {
+        top_margin:    state.page.margins[:top],
+        bottom_margin: state.page.margins[:bottom],
+        left_margin:   0,
+        right_margin:  0,
+        page_size: [@bounding_box.width, state.page.dimensions[-1]],
+        page_layout: state.page.layout
+      }
+      Prawn::Document.new(opts) do |pdf|
         pdf.text_formatter = @text_formatter.dup
         pdf.font_families.update font_families
         pdf.font font.family
